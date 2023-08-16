@@ -19,23 +19,37 @@ jobs:
 
         #sudo apt update -yqq
         #sudo apt install -yqq golang 
-
+        echo "Get golang"
         wget -nv https://go.dev/dl/go1.20.2.linux-amd64.tar.gz > /dev/null
         tar -xzf go1.20.2.linux-amd64.tar.gz > /dev/null
         sudo mv go /usr/local
 
+        echo
+        echo
+        echo "Fix mod.go"
         sed -i '#staging/src/k8s.io/node-api#d' go.mod
         sed -i 's#github.com/k3s-io/kubernetes#github.com/salyh/kubernetes#g' go.mod
         sed -i 's#v1.27.4-k3s1#release_v1.27.4#g' go.mod
-
+        echo
         cat go.mod
 
+        echo
+        echo
+        echo "Tidy mod.go"
         go mod tidy -v -x && go mod verify
 
+        echo
+        echo
+        echo "Push mod.go"
         git config --global user.name "CI"
         git config --global user.email "ci@users.noreply.github.com"
-        git commit -a -m "Update go.mod to point to github.com/salyh/kubernetes"
-        #git push
+        git add go.mod go.sum || true
+        git commit -a -m "Update go.mod to point to github.com/salyh/kubernetes" || true
+        git push || true
+
+        echo
+        echo
+        echo "Make"
 
         DOCKER_BUILDKIT=1 SKIP_AIRGAP=1 SKIP_VALIDATE=1 GOCOVER=1 make
       
