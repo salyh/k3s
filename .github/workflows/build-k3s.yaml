@@ -3,8 +3,7 @@ name: Build K3s
 on: 
   push:
 
-permissions:
-  contents: read
+permissions: write-all
 
 jobs:
   build:
@@ -27,7 +26,7 @@ jobs:
         echo
         echo
         echo "Fix mod.go"
-        sed -i '#staging/src/k8s.io/node-api#d' go.mod
+        sed -i '/node-api/d' go.mod
         sed -i 's#github.com/k3s-io/kubernetes#github.com/salyh/kubernetes#g' go.mod
         sed -i 's#v1.27.4-k3s1#release_v1.27.4#g' go.mod
         echo
@@ -36,7 +35,7 @@ jobs:
         echo
         echo
         echo "Tidy mod.go"
-        go mod tidy -v -x && go mod verify
+        go mod tidy && go mod verify
 
         echo
         echo
