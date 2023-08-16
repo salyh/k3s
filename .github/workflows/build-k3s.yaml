@@ -1,15 +1,9 @@
 name: Build K3s
 
 on: 
-  workflow_call:
-   inputs:
-    upload-repo:
-      type: boolean
-      required: false
-      default: false
+  push:
 
-permissions:
-  contents: read
+permissions: write-all
 
 jobs:
   build:
@@ -21,21 +15,44 @@ jobs:
       uses: actions/checkout@v3
     - name: Build K3s binary
       run: |
+
+        #sudo apt update -yqq
+        #sudo apt install -yqq golang 
+        echo "Get golang"
+        wget -nv https://go.dev/dl/go1.20.2.linux-amd64.tar.gz > /dev/null
+        tar -xzf go1.20.2.linux-amd64.tar.gz > /dev/null
+        sudo mv go /usr/local
+
+        echo
+        echo
+        echo "Fix mod.go"
+        sed -i '/node-api/d' go.mod
+        sed -i 's#github.com/k3s-io/kubernetes#github.com/salyh/kubernetes#g' go.mod
+        sed -i 's#v1.27.4-k3s1#release_v1.27.4#g' go.mod
+        echo
+        cat go.mod
+
+        echo
+        echo
+        echo "Tidy mod.go"
+        go mod tidy && go mod verify
+
+        echo
+        echo
+        echo "Push mod.go"
+        git config --global user.name "CI"
+        git config --global user.email "ci@users.noreply.github.com"
+        git add go.mod go.sum || true
+        git commit -a -m "Update go.mod to point to github.com/salyh/kubernetes" || true
+        git push || true
+
+        echo
+        echo
+        echo "Make"
+
         DOCKER_BUILDKIT=1 SKIP_AIRGAP=1 SKIP_VALIDATE=1 GOCOVER=1 make
       
-    - name: bundle repo
-      if: inputs.upload-repo == true
-      run: |
-        tar -czvf ../k3s-repo.tar.gz .
-        mv ../k3s-repo.tar.gz .
-    - name: "Upload K3s directory"
-      if: inputs.upload-repo == true
-      uses: actions/upload-artifact@v3
-      with:
-        name: k3s-repo.tar.gz
-        path: k3s-repo.tar.gz
     - name: "Upload K3s binary"
-      if: inputs.upload-repo == false
       uses: actions/upload-artifact@v3
       with:
         name: k3s
