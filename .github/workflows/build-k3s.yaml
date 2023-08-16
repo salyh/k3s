@@ -17,8 +17,8 @@ jobs:
     - name: Build K3s binary
       run: |
 
-        apt update -yqq
-        apt install -yqq golang 
+        sudo apt update -yqq
+        sudo apt install -yqq golang 
 
         sed -i '#staging/src/k8s.io/node-api#d' go.mod
         sed -i 's#github.com/k3s-io/kubernetes#github.com/salyh/kubernetes#g' go.mod
