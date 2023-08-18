@@ -69,4 +69,4 @@ jobs:
       run: |
         
         #mv dist/artifacts/k3s dist/artifacts/k3s-version
-        aws s3 sync dist/artifacts/k3s s3://k3e-bin
+        aws s3 sync dist/artifacts s3://k3e-bin
