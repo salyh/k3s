@@ -9,7 +9,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-20.04
-    timeout-minutes: 20
+    timeout-minutes: 360
     steps:
     - name: Checkout K3s
       uses: actions/checkout@v3
